@@ -2,7 +2,6 @@ using Advertising_platforms.Features.AdPlatform;
 using Advertising_platforms.Features.AdPlatform.GetAdPlatforms;
 using Advertising_platforms.Features.ExceptionValidation;
 using Advertising_platforms.Features.Middleware;
-using Advertising_platforms.Features.Models;
 using Advertising_platforms.Services;
 using Advertising_platforms.Services.Interfaces;
 using FluentValidation;
@@ -69,6 +68,9 @@ builder.Services.AddSingleton<IRepository>(repository);
 
 var adPlatformService = new AdPlatformService(repository);
 builder.Services.AddSingleton<IAdPlatformService>(adPlatformService);
+
+var userRepository = new UserRepository();
+builder.Services.AddSingleton<IUserRepository>(userRepository);
 //
 
 builder.Services.AddMediatR(cfg => cfg.RegisterServicesFromAssembly(Assembly.GetExecutingAssembly()));
@@ -77,13 +79,14 @@ builder.Services.AddValidatorsFromAssemblyContaining<GetAdPlatformsQueryValidato
 builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
     .AddJwtBearer(options =>
     {
+        var key = builder.Configuration["Jwt:Key"];
         options.TokenValidationParameters = new TokenValidationParameters
         {
             ValidateIssuer = false,
             ValidateAudience = false,
             ValidateLifetime = true,
             ValidateIssuerSigningKey = true,
-            IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes("SuperSecretKey12345"))
+            IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(key!))
         };
     });
 
@@ -114,6 +117,8 @@ if (app.Environment.IsDevelopment())
 app.UseMiddleware<ExceptionHandlingMiddleware>();
 
 app.UseHttpsRedirection();
+
+builder.Services.AddAuthorization();
 
 app.UseAuthorization();
 

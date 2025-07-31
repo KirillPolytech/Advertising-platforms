@@ -18,8 +18,8 @@ namespace Advertising_platforms.Features.Controllers
             _mediator = mediator;
         }
 
+        [Authorize(Roles = "admin")]
         [HttpPost("load")]
-        //[Authorize]
         public async Task<IActionResult> LoadFile([FromBody] LoadFileRequest file)
         {
             if (file == null || string.IsNullOrEmpty(file.FileBase64))
@@ -40,6 +40,7 @@ namespace Advertising_platforms.Features.Controllers
             return result ? Ok("Файл успешно загружен.") : BadRequest("Ошибка загрузки файла.");
         }
 
+        [Authorize]
         [HttpGet("search")]
         public async Task<IActionResult> Search([FromQuery] string location)
         {
